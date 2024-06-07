@@ -38,7 +38,7 @@ void Game::Initialize()
         exit(1);
     }
 
-    m_Font = TTF_OpenFont("arial.ttf", 24); // Ensure "arial.ttf" is available or replace with a valid font path
+    m_Font = TTF_OpenFont("arial.ttf", 24); 
     if (!m_Font)
     {
         std::cerr << "TTF_OpenFont: " << TTF_GetError() << std::endl;
