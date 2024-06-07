@@ -683,4 +683,28 @@ bool utils::IntersectRectLine(const Rectf& r, const Point2f& p1, const Point2f& 
 	return true;
 }
 
+void DrawText(const std::string& text, const Point2f& position, TTF_Font* pFont, const Color4f& color)
+{
+	SDL_Color sdlColor = { Uint8(color.r * 255), Uint8(color.g * 255), Uint8(color.b * 255), Uint8(color.a * 255) };
+	SDL_Surface* pSurface = TTF_RenderText_Solid(pFont, text.c_str(), sdlColor);
+	if (pSurface == nullptr)
+	{
+		return;
+	}
+	SDL_Texture* pTexture = SDL_CreateTextureFromSurface(SDL_GetRenderer(SDL_GetWindowFromID(1)), pSurface);
+	if (pTexture == nullptr)
+	{
+		SDL_FreeSurface(pSurface);
+		return;
+	}
+	SDL_Rect dstRect;
+	dstRect.x = int(position.x);
+	dstRect.y = int(position.y);
+	dstRect.w = pSurface->w;
+	dstRect.h = pSurface->h;
+	SDL_RenderCopy(SDL_GetRenderer(SDL_GetWindowFromID(1)), pTexture, nullptr, &dstRect);
+	SDL_FreeSurface(pSurface);
+	SDL_DestroyTexture(pTexture);
+}
+
 #pragma endregion CollisionFunctionality
