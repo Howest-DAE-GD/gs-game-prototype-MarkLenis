@@ -12,6 +12,7 @@ struct Balloon
     bool isPopped;
     bool isBomb;
     bool randGenerated;
+    bool isSpecial; 
 };
 
 class Game : public BaseGame
@@ -48,7 +49,7 @@ private:
     void DrawScore() const;
     void DrawLives() const;
     void ShowGameOver() const;
-    void ResetGame(); // Added method
+    void PopAllBalloons(); 
 
     // MEMBER VARIABLES
     std::vector<Balloon> m_Balloons;

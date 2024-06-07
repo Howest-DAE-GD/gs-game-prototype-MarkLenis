@@ -38,7 +38,7 @@ void Game::Initialize()
         exit(1);
     }
 
-    m_Font = TTF_OpenFont("arial.ttf", 24); 
+    m_Font = TTF_OpenFont("arial.ttf", 24); // Ensure "arial.ttf" is available or replace with a valid font path
     if (!m_Font)
     {
         std::cerr << "TTF_OpenFont: " << TTF_GetError() << std::endl;
@@ -126,7 +126,11 @@ void Game::ProcessKeyDownEvent(const SDL_KeyboardEvent& e)
 {
     if (e.keysym.sym == SDLK_r)
     {
-        ResetGame();
+        if (m_IsGameOver)
+        {
+            Initialize();
+            m_IsGameOver = false;
+        }
     }
 }
 
@@ -167,7 +171,14 @@ void Game::SpawnBalloon()
                              1.0f };
     balloon.isPopped = false;
     balloon.isBomb = false;
+    balloon.isSpecial = (std::rand() % 100) < 5; 
     balloon.randGenerated = false;
+
+    if (balloon.isSpecial)
+    {
+        balloon.color = Color4f{ 1.0f, 0.84f, 0.0f, 1.0f }; 
+    }
+
     m_Balloons.push_back(balloon);
 }
 
@@ -191,7 +202,10 @@ void Game::MoveBalloons(float elapsedSec)
             if (balloon.position.y - balloon.radius > GetViewPort().height)
             {
                 balloon.isPopped = true;
-                m_Lives--;
+                if (!balloon.isSpecial)
+                {
+                    m_Lives--;
+                }
                 m_BalloonsOffScreen++;
             }
             else
@@ -200,7 +214,6 @@ void Game::MoveBalloons(float elapsedSec)
                 {
                     int randNumber = std::rand() % 100 + 1;
                     balloon.randGenerated = true;
-                    std::cout << randNumber << std::endl;
 
                     if (randNumber <= 8)
                     {
@@ -232,34 +245,55 @@ void Game::PopBalloon(float x, float y)
                     m_Lives--;
                     std::cout << "Bomb balloon popped! Lives left: " << m_Lives << std::endl;
                 }
-                balloon.isPopped = true;
 
-                float height = balloon.position.y;
-                float screenHeight = GetViewPort().height;
-
-                if (height >= screenHeight * 3 / 4)
+                if (balloon.isSpecial)
                 {
-                    m_Score += 4;
-                    std::cout << "Score: " << m_Score << " (4 points)\n";
-                }
-                else if (height >= screenHeight / 2)
-                {
-                    m_Score += 3;
-                    std::cout << "Score: " << m_Score << " (3 points)\n";
-                }
-                else if (height >= screenHeight / 4)
-                {
-                    m_Score += 2;
-                    std::cout << "Score: " << m_Score << " (2 points)\n";
+                    PopAllBalloons();
+                    m_Score += 10; 
+                    std::cout << "Special balloon popped! Extra 10 points. Score: " << m_Score << std::endl;
                 }
                 else
                 {
-                    m_Score += 1;
-                    std::cout << "Score: " << m_Score << " (1 point)\n";
+                    float height = balloon.position.y;
+                    float screenHeight = GetViewPort().height;
+
+                    if (height >= screenHeight * 3 / 4)
+                    {
+                        m_Score += 4;
+                        std::cout << "Score: " << m_Score << " (4 points)\n";
+                    }
+                    else if (height >= screenHeight / 2)
+                    {
+                        m_Score += 3;
+                        std::cout << "Score: " << m_Score << " (3 points)\n";
+                    }
+                    else if (height >= screenHeight / 4)
+                    {
+                        m_Score += 2;
+                        std::cout << "Score: " << m_Score << " (2 points)\n";
+                    }
+                    else
+                    {
+                        m_Score += 1;
+                        std::cout << "Score: " << m_Score << " (1 point)\n";
+                    }
                 }
 
+                balloon.isPopped = true;
                 break;
             }
+        }
+    }
+}
+
+void Game::PopAllBalloons()
+{
+    for (Balloon& balloon : m_Balloons)
+    {
+        if (!balloon.isPopped && !balloon.isSpecial)
+        {
+            balloon.isPopped = true;
+            m_Score += 1; 
         }
     }
 }
@@ -316,7 +350,7 @@ void Game::DrawScore() const
 
 void Game::DrawLives() const
 {
-    m_LivesTexture->Draw(Point2f{ GetViewPort().width - 90, GetViewPort().height - 30 }); 
+    m_LivesTexture->Draw(Point2f{ GetViewPort().width - 180, GetViewPort().height - 30 });
 }
 
 void Game::ShowGameOver() const
@@ -325,26 +359,7 @@ void Game::ShowGameOver() const
     SetColor(overlayColor);
     FillRect(0, 0, GetViewPort().width, GetViewPort().height);
 
-    std::string gameOverText = "Game Over! Final Score: " + std::to_string(m_Score) + "    Time Survived: " + std::to_string(static_cast<int>(m_GameTime)) + "s";
+    std::string gameOverText = "Game Over! Final Score: " + std::to_string(m_Score) + "\nTime Survived: " + std::to_string(static_cast<int>(m_GameTime)) + "s";
     Texture gameOverTexture(gameOverText, "arial.ttf", 24, Color4f{ 1.0f, 0.0f, 0.0f, 1.0f });
-    gameOverTexture.Draw(Point2f{ GetViewPort().width / 2 - 260, GetViewPort().height / 2 });
-}
-
-void Game::ResetGame()
-{
-    m_Balloons.clear();
-    m_SpawnTimer = 0.0f;
-    m_SpawnInterval = 1.0f;
-    m_Score = 0;
-    m_BalloonsOffScreen = 0;
-    m_GameTime = 0.0f;
-    m_BalloonSpeed = 100.0f;
-    m_Lives = 5;
-    m_IsGameOver = false;
-
-    delete m_ScoreTexture;
-    m_ScoreTexture = new Texture("Score: 0", "arial.ttf", 24, Color4f{ 1.0f, 0.0f, 0.0f, 1.0f });
-
-    delete m_LivesTexture;
-    m_LivesTexture = new Texture("Lives: 5", "arial.ttf", 24, Color4f{ 1.0f, 0.0f, 0.0f, 1.0f });
+    gameOverTexture.Draw(Point2f{ GetViewPort().width / 2 - 150, GetViewPort().height / 2 });
 }
