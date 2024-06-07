@@ -359,7 +359,7 @@ void Game::ShowGameOver() const
     SetColor(overlayColor);
     FillRect(0, 0, GetViewPort().width, GetViewPort().height);
 
-    std::string gameOverText = "Game Over! Final Score: " + std::to_string(m_Score) + "\nTime Survived: " + std::to_string(static_cast<int>(m_GameTime)) + "s";
+    std::string gameOverText = "Game Over! Final Score: " + std::to_string(m_Score) + "   Time Survived: " + std::to_string(static_cast<int>(m_GameTime)) + "s";
     Texture gameOverTexture(gameOverText, "arial.ttf", 24, Color4f{ 1.0f, 0.0f, 0.0f, 1.0f });
-    gameOverTexture.Draw(Point2f{ GetViewPort().width / 2 - 150, GetViewPort().height / 2 });
+    gameOverTexture.Draw(Point2f{ GetViewPort().width / 2 - 250, GetViewPort().height / 2 });
 }
