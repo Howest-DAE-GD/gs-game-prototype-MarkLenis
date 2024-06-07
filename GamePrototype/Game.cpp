@@ -215,7 +215,7 @@ void Game::MoveBalloons(float elapsedSec)
                     int randNumber = std::rand() % 100 + 1;
                     balloon.randGenerated = true;
 
-                    if (randNumber <= 8)
+                    if (randNumber <= 12)
                     {
                         balloon.isBomb = true;
                         balloon.color = Color4f{ 0.0f, 0.0f, 0.0f, 1.0f };
